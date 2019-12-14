@@ -6,11 +6,8 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-<<<<<<< HEAD
     "base64-to-image": "^1.0.2",
-=======
     "@azure/cognitiveservices-customvision-prediction": "^4.0.0",
->>>>>>> master
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
