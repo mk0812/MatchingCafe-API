@@ -16,6 +16,7 @@ var multer = require('multer');
 var upload = multer({ dest: tmpDir });
 
 const sharp = require('sharp');
+const sizeOf = require('image-size')
 
 // endpoint1: save the no-bg-image localy
 router.post('/', upload.single('data'), (req, res)=> {
@@ -47,7 +48,7 @@ router.post('/', upload.single('data'), (req, res)=> {
     //     console.log(info)
     // });
     // アップ完了したら200ステータスを送る
-    res.status(200).json({msg: upDir+'save/'+filename});
+    res.status(200).json({name: filename});
 });
 
 // 背景特徴 endpoint
@@ -69,44 +70,78 @@ router.get('/selectbg/:filename', async function (req, res) {
 });
 
 // 画像編集 endpoint
-router.get('/editimage/:filename', async function (req, res) {
-    await sharp(upDir + req.params.filename).resize(null,417).toFile(upDir+'save/'+req.params.filename)
-    .then(data => {
-        console.log(data);
-    })
-    .catch(err => {
-      console.error(err);
-    });
-    // sharp(upDir + req.params.filename).grayscale().toFile(upDir + 'save/' + 'output.jpg', (err, info)=>{
-    //     if(err){
-    //         throw err;
-    //     }
-    //     console.log(info);
-    // });
-    // await sharp(upDir+req.params.filename).resize(null,417).toFile(upDir+'save/'+'output.png', (err, info)=>{
-    //     if(err){
-    //       throw err
-    //     }
-    //     console.log(info)
-    // });
-    await sharp(bgDir + 'bg1.jpg').composite([{
-        input: upDir+'save/'+req.params.filename
-    }]).toFile(upDir+'save/'+req.params.filename+'-compositite.png')
-    .then(data =>{
-        console.log(data);
-      })
-      .catch(err => {
-        console.error(err);
-    });
+router.post('/editimage/:filename', async function (req, res) {
+    console.log(JSON.stringify(req.body))
+    const idx =req.params.filename.indexOf('.png');
+    const filename = req.params.filename.slice(0, idx)
+    console.log(filename);
+    const dimensions = sizeOf(bgDir + 'bg1.jpg');
+    const resize_height = Math.ceil(4*(dimensions.height/5))
 
-    sharp(upDir+'save/'+req.params.filename+'-compositite.png').grayscale().toFile(upDir+'save/'+req.params.filename+'-compositite.png'+'-gray.png')
-    .then(data =>{
-        console.log(data);
-      })
-      .catch(err => {
-        console.error(err);
-    });
-    res.json({status: 200});
+
+    // 人物画サイズ変更
+    if(req.body.grayscale === "true"){
+        await sharp(upDir + req.params.filename).resize(null,resize_height).grayscale().toFile(upDir+'save/'+req.params.filename)
+        .then(data => {
+            //console.log(data);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+    } else {
+        await sharp(upDir + req.params.filename).resize(null,resize_height).toFile(upDir+'save/'+req.params.filename)
+        .then(data => {
+            //console.log(data);
+        })
+        .catch(err => {
+            console.error(err);
+        });
+    }
+
+    // 背景画像の合成
+    if(req.body.grayscale === "true"){
+        await sharp(bgDir + 'bg1.jpg').composite([{
+            input: upDir+'save/'+req.params.filename,
+            top: parseInt(req.body.top),
+            left: parseInt(req.body.left)
+        }]).grayscale().toFile(upDir+'save/'+filename +'-compositite-gray.png')
+        .then(data =>{
+            //console.log(data);
+            console.log('save: '+upDir+'save/'+filename + '-compositite.png')
+        })
+        .catch(err => {
+            console.error(err);
+        });
+        res.json({name: filename+'-compositite-gray.png'});
+    } else {
+        await sharp(bgDir + 'bg1.jpg').composite([{
+            input: upDir+'save/'+req.params.filename,
+            top: parseInt(req.body.top),
+            left: parseInt(req.body.left)
+        }]).toFile(upDir+'save/'+filename + '-compositite.png')
+        .then(data =>{
+            //console.log(data);
+            console.log('save: '+upDir+'save/'+filename + '-compositite.png')
+        })
+        .catch(err => {
+            console.error(err);
+        });
+        res.json({name: filename+'-compositite.png'});
+    }
+    // // グレースケールに変更
+    // if(req.body.grayscale === "true"){
+    //     console.log('grayscale start');
+    //     //filename = req.params.filename+'-compositite-gray.png'
+    //     await sharp(upDir+'save/'+filename + '.png').grayscale().toFile(upDir+'save/'+filename+'-gray.png')
+    //     .then(data =>{
+    //         console.log(data);
+    //     })
+    //     .catch(err => {
+    //         console.error(err);
+    //     });
+    //     return res.json({name: filename+'-gray.png'});
+    // }
+    //res.json({name: filename});
 });
 
 module.exports = router;
