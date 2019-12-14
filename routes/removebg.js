@@ -69,9 +69,9 @@ router.get('/selectbg/:filename', async function (req, res) {
 
     console.log("Results:");
     if (results.predictions[0].probability < results.predictions[1].probability) {
-        res.json({ "tag" : results.predictions[1].tagName });
+        res.json({ tag : results.predictions[1].tagName });
     } else {
-        res.json({ "tag" : results.predictions[0].tagName });
+        res.json({ tag : results.predictions[0].tagName });
     }
 });
 
