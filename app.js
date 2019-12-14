@@ -10,6 +10,22 @@ var users = require('./routes/users');
 var removebg = require('./routes/removebg');
 
 var app = express();
+const allowOrigin = function(req,res,next){
+  res.header('Access-Control-Allow-Origin', '*')
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, access_token'
+  )
+
+  if(req.method === 'OPTIONS'){
+    res.send(200)
+  }else{
+    next()
+  }
+}
+//CORS設定
+app.use(allowOrigin);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
