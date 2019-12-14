@@ -2,10 +2,12 @@ var express = require('express');
 var base64ToImage = require('base64-to-image');
 var router = express.Router();
 
-//const upDir ='/Users/kosuke_matsuoka/Pictures/testfolder/'
-const tmpDir = '/Users/ban/Pictures/testfolder/studyData/tmp/'
-const upDir = '/Users/ban/Pictures/testfolder/studyData/no-bg/'
-const bgDir = '/Users/ban/Pictures/testfolder/studyData/bg/'
+const upDir ='/Users/kosuke_matsuoka/Pictures/testfolder/'
+const tmpDir = '/Users/kosuke_matsuoka/Pictures/testfolder/'
+const bgDir = '/Users/kosuke_matsuoka/Pictures/testfolder/studyData/bg/'
+// const tmpDir = '/Users/ban/Pictures/testfolder/studyData/tmp/'
+// const upDir = '/Users/ban/Pictures/testfolder/studyData/no-bg/'
+// const bgDir = '/Users/ban/Pictures/testfolder/studyData/bg/'
 const custumViewUrl ='https://japaneast.api.cognitive.microsoft.com/customvision/v3.0/Prediction/8cff8e09-1e6b-44c9-943a-47b99567af39/classify/iterations/Iteration1/image'
 
 var request = require('request');
@@ -22,7 +24,7 @@ const sizeOf = require('image-size')
 // endpoint1: save the no-bg-image localy
 router.post('/', upload.single('data'), async (req, res)=> {
     console.log('in test');
-    const filename = req.file.filename + '.png'
+    const filename = 'output.png'
     // デッバグのため、アップしたファイルの名前を表示する
     console.log('start removebg');
     var optionalObj = {'fileName': 'bgTest', 'type':'png'};
