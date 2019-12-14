@@ -44,12 +44,13 @@ router.post('/', upload.single('data'), async (req, res)=> {
         }, function (error, response, body) {
             if (error)
                 return console.error('Request failed:', error);
-            if (response.statusCode != 200)
-                return console.error('Error:', response.statusCode, body.toString('utf8'));
-            
-            fs.writeFileSync("/Users/kosuke_matsuoka/Pictures/testfolder/no-bg-test3.png", body);
+            if (response.statusCode != 200){
+                console.error('Error:', response.statusCode, body.toString('utf8'));
+                return res.status(response.statusCode).json({msg:'Error:'+ response.statusCode + body.toString('utf8')})
+            }
+            fs.writeFileSync(upDir + filename, body);
             console.log('pass')
-            res.status(200).json({msg: 'no-bg-test3.png'});
+            res.status(200).json({name: filename});
         });
     },3000);
 });
