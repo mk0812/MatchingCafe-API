@@ -81,14 +81,20 @@ router.post('/editimage/:filename', async function (req, res) {
     const idx =req.params.filename.indexOf('.png');
     const filename = req.params.filename.slice(0, idx)
     console.log(filename);
+    
     const number = (req.body.tag === 'front') ? (getRandomInt(5)+1).toString() : (getRandomInt(5)+6).toString()
     console.log(number);
+    
     const bg_file = 'bg' + number+'.jpg'
     console.log('bg_file:' + bg_file);
-    
-    const dimensions = sizeOf(bgDir + bg_file);
-    const resize_height = Math.ceil(dimensions.height)
 
+    const dimensions = sizeOf(bgDir + bg_file);
+    console.log(dimensions.width, dimensions.height);
+    const left = number != 2 ? Math.ceil(dimensions.width*0.6) : 350;
+    const top = number != 2 ? Math.ceil(dimensions.height*0.7) : 200;
+    const resize_height = Math.ceil(dimensions.height*0.7);
+    console.log('left:' + left);
+    console.log('top:' + top);
 
     // 人物画サイズ変更
     if(req.body.grayscale === "true"){
@@ -113,8 +119,10 @@ router.post('/editimage/:filename', async function (req, res) {
     if(req.body.grayscale === "true"){
         await sharp(bgDir + bg_file).composite([{
             input: upDir+'save/'+req.params.filename,
-            top: parseInt(req.body.top),
-            left: parseInt(req.body.left)
+            // top: parseInt(req.body.top),
+            // left: parseInt(req.body.left)
+            top: top,
+            left: left
         }]).grayscale().toFile(upDir+'save/'+filename +number+'-compositite-gray.png')
         .then(data =>{
             //console.log(data);
@@ -127,8 +135,10 @@ router.post('/editimage/:filename', async function (req, res) {
     } else {
         await sharp(bgDir + bg_file).composite([{
             input: upDir+'save/'+req.params.filename,
-            top: parseInt(req.body.top),
-            left: parseInt(req.body.left)
+            // top: parseInt(req.body.top),
+            // left: parseInt(req.body.left)
+            top: top,
+            left: left
         }]).toFile(upDir+'save/'+filename + number+'-compositite.png')
         .then(data =>{
             //console.log(data);
