@@ -2,12 +2,12 @@ var express = require('express');
 var base64ToImage = require('base64-to-image');
 var router = express.Router();
 
-const upDir ='/Users/kosuke_matsuoka/Pictures/testfolder/'
-const tmpDir = '/Users/kosuke_matsuoka/Pictures/testfolder/'
-const bgDir = '/Users/kosuke_matsuoka/Pictures/testfolder/studyData/bg/'
-// const tmpDir = '/Users/ban/Pictures/testfolder/studyData/tmp/'
-// const upDir = '/Users/ban/Pictures/testfolder/studyData/no-bg/'
-// const bgDir = '/Users/ban/Pictures/testfolder/studyData/bg/'
+// const upDir ='/Users/kosuke_matsuoka/Pictures/testfolder/'
+// const tmpDir = '/Users/kosuke_matsuoka/Pictures/testfolder/'
+// const bgDir = '/Users/kosuke_matsuoka/Pictures/testfolder/studyData/bg/'
+const tmpDir = '/Users/ban/Pictures/testfolder/'
+const upDir = '/Users/ban/Pictures/testfolder/'
+const bgDir = '/Users/ban/Pictures/testfolder/bg/'
 const custumViewUrl ='https://japaneast.api.cognitive.microsoft.com/customvision/v3.0/Prediction/8cff8e09-1e6b-44c9-943a-47b99567af39/classify/iterations/Iteration1/image'
 
 var request = require('request');
@@ -81,8 +81,13 @@ router.post('/editimage/:filename', async function (req, res) {
     const idx =req.params.filename.indexOf('.png');
     const filename = req.params.filename.slice(0, idx)
     console.log(filename);
-    const dimensions = sizeOf(bgDir + 'bg1.jpg');
-    const resize_height = Math.ceil(4*(dimensions.height/5))
+    const number = (req.body.tag === 'front') ? (getRandomInt(5)+1).toString() : (getRandomInt(5)+6).toString()
+    console.log(number);
+    const bg_file = 'bg' + number+'.jpg'
+    console.log('bg_file:' + bg_file);
+    
+    const dimensions = sizeOf(bgDir + bg_file);
+    const resize_height = Math.ceil(dimensions.height)
 
 
     // 人物画サイズ変更
@@ -106,48 +111,38 @@ router.post('/editimage/:filename', async function (req, res) {
 
     // 背景画像の合成
     if(req.body.grayscale === "true"){
-        await sharp(bgDir + 'bg1.jpg').composite([{
+        await sharp(bgDir + bg_file).composite([{
             input: upDir+'save/'+req.params.filename,
             top: parseInt(req.body.top),
             left: parseInt(req.body.left)
-        }]).grayscale().toFile(upDir+'save/'+filename +'-compositite-gray.png')
+        }]).grayscale().toFile(upDir+'save/'+filename +number+'-compositite-gray.png')
         .then(data =>{
             //console.log(data);
-            console.log('save: '+upDir+'save/'+filename + '-compositite.png')
+            console.log('save: '+upDir+'save/'+filename + number+'-compositite.png')
         })
         .catch(err => {
             console.error(err);
         });
-        res.json({name: filename+'-compositite-gray.png'});
+        res.json({name: filename+number+'-compositite-gray.png'});
     } else {
-        await sharp(bgDir + 'bg1.jpg').composite([{
+        await sharp(bgDir + bg_file).composite([{
             input: upDir+'save/'+req.params.filename,
             top: parseInt(req.body.top),
             left: parseInt(req.body.left)
-        }]).toFile(upDir+'save/'+filename + '-compositite.png')
+        }]).toFile(upDir+'save/'+filename + number+'-compositite.png')
         .then(data =>{
             //console.log(data);
-            console.log('save: '+upDir+'save/'+filename + '-compositite.png')
+            console.log('save: '+upDir+'save/'+filename + number+'-compositite.png')
         })
         .catch(err => {
             console.error(err);
         });
-        res.json({name: filename+'-compositite.png'});
+        res.json({name: filename+number+'-compositite.png'});
     }
-    // // グレースケールに変更
-    // if(req.body.grayscale === "true"){
-    //     console.log('grayscale start');
-    //     //filename = req.params.filename+'-compositite-gray.png'
-    //     await sharp(upDir+'save/'+filename + '.png').grayscale().toFile(upDir+'save/'+filename+'-gray.png')
-    //     .then(data =>{
-    //         console.log(data);
-    //     })
-    //     .catch(err => {
-    //         console.error(err);
-    //     });
-    //     return res.json({name: filename+'-gray.png'});
-    // }
-    //res.json({name: filename});
 });
+
+function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+}
 
 module.exports = router;
